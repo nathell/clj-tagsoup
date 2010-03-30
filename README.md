@@ -2,7 +2,8 @@ clj-tagsoup
 ===========
 
 This is a HTML parser for Clojure, somewhat akin to Common Lisp's
-[cl-html-parse].
+[cl-html-parse].  It is a wrapper around the [TagSoup] Java SAX
+parser, but has a DOM interface.  It is buildable by [Leiningen].
 
 Usage
 -----
@@ -39,3 +40,5 @@ cl-html-parse was written by [Daniel Janus].
  [cl-html-parse]: http://www.cliki.net/CL-HTML-Parse
  [reader]: http://richhickey.github.com/clojure-contrib/branch-1.1.x/duck-streams-api.html#clojure.contrib.duck-streams/reader
  [Daniel Janus]: http://danieljanus.pl
+ [TagSoup]: http://home.ccil.org/~cowan/XML/tagsoup/
+ [Leiningen]: http://github.com/technomancy/leiningen
