@@ -35,7 +35,7 @@ Example
 Author
 ------
 
-cl-html-parse was written by [Daniel Janus].
+clj-tagsoup was written by [Daniel Janus].
 
  [cl-html-parse]: http://www.cliki.net/CL-HTML-Parse
  [reader]: http://richhickey.github.com/clojure-contrib/branch-1.1.x/duck-streams-api.html#clojure.contrib.duck-streams/reader
