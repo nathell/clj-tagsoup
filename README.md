@@ -7,8 +7,10 @@ parser, but has a DOM interface.  It is buildable by [Leiningen].
 
 Usage
 -----
+
 The two main functions defined by clj-tagsoup are `parse` and `parse-string`.
-The first one can take anything accepted by clojure.contrib's [reader] function,
+The first one can take anything accepted by clojure.contrib's [reader] function
+except for a `Reader`,
 while the second can parse HTML from a string.
 
 The resulting HTML tree is a vector, consisting of:
@@ -18,6 +20,12 @@ The resulting HTML tree is a vector, consisting of:
  3. children nodes (strings or vectors of the same format).
 
 There are also utility accessors (`tag`, `attributes`, `children`).
+
+clj-tagsoup will automatically use the correct encoding to parse the file if
+one is specified in either the HTTP headers (if the argument to `parse` is an
+URL object or a string representing one) or a `<meta http-equiv="...">` tag.
+If you are running Clojure from within Leiningen, you might experience
+problems with the charsets; see [this blog post] for details.
 
 Example
 -------
@@ -42,3 +50,4 @@ clj-tagsoup was written by [Daniel Janus].
  [Daniel Janus]: http://danieljanus.pl
  [TagSoup]: http://home.ccil.org/~cowan/XML/tagsoup/
  [Leiningen]: http://github.com/technomancy/leiningen
+ [this blog post]: http://blog.danieljanus.pl/lein-swank.html

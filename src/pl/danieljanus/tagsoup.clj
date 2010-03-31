@@ -27,20 +27,29 @@
   [node]
   (rest (rest node)))
 
+(defn- encoding-from-content-type
+  "Strips the character-set name from a Content-Type: HTTP header value."
+  [content-type]
+  (when content-type
+    (second (re-find #"charset=(.*)$" content-type))))
+
 (defmulti #^{:doc "Like clojure.contrib.duck-streams/reader, but
-  attempts to convert its argument to an InputStream."}
+  attempts to convert its argument to an InputStream. Returns a map
+  mapping :stream to the stream and, potentially, :encoding to the
+  encoding detected on that stream."}
   input-stream class)
 
 (defmethod input-stream InputStream [#^InputStream x]
-  x)
+  {:stream x})
 
 (defmethod input-stream File [#^File x]
-  (FileInputStream. x))
+  {:stream (FileInputStream. x)})
 
 (defmethod input-stream URL [#^URL x]
   (if (= "file" (.getProtocol x))
     (FileInputStream. (.getPath x))
-    (.openStream x)))
+    (let [connection (.openConnection x)]
+      {:stream (.getInputStream connection), :encoding (-> connection (.getHeaderField "Content-Type") encoding-from-content-type)})))
 
 (defmethod input-stream URI [#^URI x]
   (input-stream (.toURL x)))
@@ -52,7 +61,7 @@
          (input-stream (File. x)))))
 
 (defmethod input-stream Socket [#^Socket x]
-  (.getInputStream x))
+  {:stream (.getInputStream x)})
 
 (defmethod input-stream :default [x]
   (throw (Exception. (str "Cannot open " (pr-str x) " as an input stream."))))
@@ -61,13 +70,18 @@
   "Parses a file or HTTP URL.  file may be anything that can be fed
 to clojure.contrib.duck-streams/reader.  If strip-whitespace is true
 removes empty (whitespace-only) PCDATA from in between the tags, which
-makes the resulting tree cleaner."
-  [file :strip-whitespace true]
+makes the resulting tree cleaner. If prefer-header-http-info is true
+and the encoding is specified in both <meta http-equiv> tag and the
+HTTP headers (in this case, input must be a URL or a string
+representing one), the latter is preferred."
+  [input :strip-whitespace true :prefer-header-http-info false]
   (with-local-vars [tree (zip/vector-zip []) pcdata "" reparse false]
-    (let [stream (BufferedInputStream. (input-stream file))
+    (let [{:keys [stream encoding]} (input-stream input)
+          stream (BufferedInputStream. stream)
           source (InputSource. stream)
           reparse-exception (Exception. "reparse")
           _ (.mark stream 65536)
+          _ (.setEncoding source encoding)
           flush-pcdata #(let [data (var-get pcdata)]
                           (when-not (empty? data)
                             (when-not (and strip-whitespace (re-find #"^\s+$" data))
@@ -85,7 +99,9 @@ makes the resulting tree cleaner."
                                     (and http-equiv (= (.toLowerCase http-equiv) "content-type"))))
                          (let [charset (attrs :content)
                                charset (when charset (second (re-find #"charset=(.*)$" charset)))]
-                           (when (and charset (not (var-get reparse)))
+                           (when (and charset
+                                      (not (and encoding prefer-header-http-info))
+                                      (not (var-get reparse)))
                              (.setEncoding source charset)
                              (var-set reparse true)
                              (.reset stream)
