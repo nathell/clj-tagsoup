@@ -19,6 +19,9 @@ The resulting HTML tree is a vector, consisting of:
  2. a map of tag attributes (mapping keywords to strings),
  3. children nodes (strings or vectors of the same format).
 
+This is the same format as used by [hiccup], thus the output of `parse` is
+appropriate to pass to hiccup.
+
 There are also utility accessors (`tag`, `attributes`, `children`).
 
 clj-tagsoup will automatically use the correct encoding to parse the file if
@@ -50,4 +53,5 @@ clj-tagsoup was written by [Daniel Janus].
  [Daniel Janus]: http://danieljanus.pl
  [TagSoup]: http://home.ccil.org/~cowan/XML/tagsoup/
  [Leiningen]: http://github.com/technomancy/leiningen
+ [hiccup]: http://github.com/weavejester/hiccup
  [this blog post]: http://blog.danieljanus.pl/lein-swank.html
