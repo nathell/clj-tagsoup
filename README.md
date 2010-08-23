@@ -30,6 +30,11 @@ URL object or a string representing one) or a `<meta http-equiv="...">` tag.
 If you are running Clojure from within Leiningen, you might experience
 problems with the charsets; see [this blog post] for details.
 
+clj-tagsoup is meant to parse HTML tag soup, but, in practice, nothing
+prevents you to use it to parse arbitrary (potentially malformed)
+XML. The `:xml` keyword argument causes clj-tagsoup to take into
+consideration the XML header when detecting the encoding.
+
 Example
 -------
 
