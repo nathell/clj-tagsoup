@@ -1,5 +1,6 @@
 (ns pl.danieljanus.tagsoup
-  (:use (clojure.contrib def duck-streams))
+  (:use [clojure.contrib.def :only [defnk]]
+        [clojure.contrib.duck-streams :only [read-lines]])
   (:require [clojure.zip :as zip])
   (:import (org.ccil.cowan.tagsoup Parser)
            (java.net URI URL MalformedURLException Socket)
