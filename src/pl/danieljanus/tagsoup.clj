@@ -1,10 +1,8 @@
 (ns pl.danieljanus.tagsoup
-  (:use [clojure.contrib.def :only [defnk]]
-        [clojure.contrib.io :only [read-lines]])
   (:require [clojure.zip :as zip])
   (:import (org.ccil.cowan.tagsoup Parser)
            (java.net URI URL MalformedURLException Socket)
-           (java.io InputStream File FileInputStream ByteArrayInputStream BufferedInputStream)
+           (java.io InputStream File FileInputStream ByteArrayInputStream BufferedInputStream InputStreamReader BufferedReader)
            (org.xml.sax InputSource)))
 
 (defn- attributes-map
@@ -67,7 +65,7 @@
 (defmethod input-stream :default [x]
   (throw (Exception. (str "Cannot open " (pr-str x) " as an input stream."))))
 
-(defnk parse
+(defn parse
   "Parses a file or HTTP URL.  file may be anything that can be fed
 to clojure.contrib.duck-streams/reader.  If strip-whitespace is true
 removes empty (whitespace-only) PCDATA from in between the tags, which
@@ -75,7 +73,7 @@ makes the resulting tree cleaner. If prefer-header-http-info is true
 and the encoding is specified in both <meta http-equiv> tag and the
 HTTP headers (in this case, input must be a URL or a string
 representing one), the latter is preferred."
-  [input :xml false :strip-whitespace true :prefer-header-http-info false]
+  [input & {:keys [xml strip-whitespace prefer-header-http-info], :or {strip-whitespace true}}]
   (with-local-vars [tree (zip/vector-zip []) pcdata "" reparse false]
     (let [{:keys [stream encoding]} (input-stream input)
           stream (BufferedInputStream. stream)
@@ -84,7 +82,7 @@ representing one), the latter is preferred."
           _ (.mark stream 65536)
           _ (.setEncoding source encoding)
           xml-encoding (when xml
-                         (let [first-line (first (read-lines stream))
+                         (let [first-line (-> stream InputStreamReader. BufferedReader. .readLine)
                                xml-header? (.startsWith first-line "<?xml ")]
                            (.reset stream)
                            (when xml-header?
