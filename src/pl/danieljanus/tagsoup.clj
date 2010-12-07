@@ -1,5 +1,6 @@
 (ns pl.danieljanus.tagsoup
-  (:require [clojure.zip :as zip])
+  (:require [clojure.zip :as zip]
+            [clojure.xml :as xml])
   (:import (org.ccil.cowan.tagsoup Parser)
            (java.net URI URL MalformedURLException Socket)
            (java.io InputStream File FileInputStream ByteArrayInputStream BufferedInputStream InputStreamReader BufferedReader)
@@ -64,6 +65,11 @@
 
 (defmethod input-stream :default [x]
   (throw (Exception. (str "Cannot open " (pr-str x) " as an input stream."))))
+
+(defn- startparse-tagsoup
+  "A startparse function compatible with clojure.xml."
+  [source content-handler]
+  (.. (Parser.) (.setContentHandler content-handler) (.parse source)))
 
 (defn parse
   "Parses a file or HTTP URL.  file may be anything that can be fed
@@ -137,3 +143,9 @@ representing one), the latter is preferred."
   "Parses a given string as HTML, passing options to `parse'."
   [s & options]
   (apply parse (-> s .getBytes ByteArrayInputStream.) options))
+
+(defn parse-xml
+  "Parses a given XML using TagSoup and returns the parse result
+in the same format as clojure.xml/parse."
+  [input]
+  (xml/parse input startparse-tagsoup))

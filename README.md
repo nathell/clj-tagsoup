@@ -35,6 +35,10 @@ prevents you to use it to parse arbitrary (potentially malformed)
 XML. The `:xml` keyword argument causes clj-tagsoup to take into
 consideration the XML header when detecting the encoding.
 
+Another option for parsing XML is using the `parse-xml` function. It just
+invokes `clojure.xml/parse` with TagSoup, so the output format is
+compatible with `clojure.xml` and is not the one described above.
+
 Example
 -------
 
