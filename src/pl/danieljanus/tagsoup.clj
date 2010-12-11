@@ -69,7 +69,10 @@
 (defn- startparse-tagsoup
   "A startparse function compatible with clojure.xml."
   [source content-handler]
-  (.. (Parser.) (.setContentHandler content-handler) (.parse source)))
+  (let [p (Parser.)]
+    (.setContentHandler p content-handler)
+    (.parse p source)
+    p))
 
 (defn parse
   "Parses a file or HTTP URL.  file may be anything that can be fed
