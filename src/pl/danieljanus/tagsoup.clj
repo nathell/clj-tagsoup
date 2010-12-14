@@ -66,10 +66,31 @@
 (defmethod input-stream :default [x]
   (throw (Exception. (str "Cannot open " (pr-str x) " as an input stream."))))
 
+(defn read-xml-encoding-declaration
+  "Reads XML encoding declaration from a BufferedInputStream."
+  [stream]
+  (let [arr-size 1024
+        arr (make-array Byte/TYPE arr-size)]
+    (.mark stream arr-size)
+    (loop [offset 0]
+      (let [nread (.read stream arr offset (- arr-size offset))]
+        (if (or (= nread -1) (= (+ offset nread) arr-size))
+          arr
+          (recur (+ offset nread)))))
+    (.reset stream)
+    (let [s (String. arr (java.nio.charset.Charset/forName "ISO-8859-1"))]
+      (when (.startsWith s "<?xml ")
+        (second (re-find #"encoding=\"(.*)\"" s))))))
+
 (defn- startparse-tagsoup
   "A startparse function compatible with clojure.xml."
   [source content-handler]
-  (let [p (Parser.)]
+  (let [p (Parser.)
+        stream (-> ((input-stream source) :stream) BufferedInputStream.)
+        source (InputSource. stream)
+        xml-encoding (read-xml-encoding-declaration stream)]
+    (when xml-encoding
+      (.setEncoding source xml-encoding))
     (.setContentHandler p content-handler)
     (.parse p source)
     p))
@@ -88,16 +109,9 @@ representing one), the latter is preferred."
           stream (BufferedInputStream. stream)
           source (InputSource. stream)
           reparse-exception (Exception. "reparse")
+          xml-encoding (when xml (read-xml-encoding-declaration stream))
           _ (.mark stream 65536)
-          _ (.setEncoding source encoding)
-          xml-encoding (when xml
-                         (let [first-line (-> stream InputStreamReader. BufferedReader. .readLine)
-                               xml-header? (.startsWith first-line "<?xml ")]
-                           (.reset stream)
-                           (when xml-header?
-                             (second (re-find #"encoding=\"(.*)\"" first-line)))))
-          _ (when xml-encoding
-              (.setEncoding source xml-encoding))
+          _ (.setEncoding source (or (and xml xml-encoding) encoding))
           flush-pcdata #(let [data (var-get pcdata)]
                           (when-not (empty? data)
                             (when-not (and strip-whitespace (re-find #"^\s+$" data))
