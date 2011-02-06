@@ -31,7 +31,7 @@
   "Strips the character-set name from a Content-Type: HTTP header value."
   [content-type]
   (when content-type
-    (second (re-find #"charset=(.*)$" content-type))))
+    (second (re-find #"charset=(.*)$" (.toLowerCase content-type)))))
 
 (defmulti #^{:doc "Like clojure.contrib.duck-streams/reader, but
   attempts to convert its argument to an InputStream. Returns a map
