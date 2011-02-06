@@ -127,8 +127,7 @@ representing one), the latter is preferred."
                        (when (and (= tag :meta)
                                   (let [http-equiv (attrs :http-equiv)]
                                     (and http-equiv (= (.toLowerCase http-equiv) "content-type"))))
-                         (let [charset (attrs :content)
-                               charset (when charset (second (re-find #"charset=(.*)$" charset)))]
+                         (let [charset (encoding-from-content-type (attrs :content))]
                            (when (and charset
                                       (not (and encoding prefer-header-http-info))
                                       (not (var-get reparse)))
