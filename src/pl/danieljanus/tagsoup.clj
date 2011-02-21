@@ -80,7 +80,7 @@
     (.reset stream)
     (let [s (String. arr (java.nio.charset.Charset/forName "ISO-8859-1"))]
       (when (.startsWith s "<?xml ")
-        (second (re-find #"encoding=\"(.*)\"" s))))))
+        (second (re-find #"encoding=\"(.*?)\"" s))))))
 
 (defn- startparse-tagsoup
   "A startparse function compatible with clojure.xml."
