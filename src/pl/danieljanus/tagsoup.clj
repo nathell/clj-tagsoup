@@ -1,6 +1,7 @@
 (ns pl.danieljanus.tagsoup
   (:require [clojure.zip :as zip]
-            [clojure.xml :as xml])
+            [clojure.xml :as xml]
+            [clojure.contrib.lazy-xml :as lazy-xml])
   (:import (org.ccil.cowan.tagsoup Parser)
            (java.net URI URL MalformedURLException Socket)
            (java.io InputStream File FileInputStream ByteArrayInputStream BufferedInputStream InputStreamReader BufferedReader)
@@ -165,3 +166,8 @@ representing one), the latter is preferred."
 in the same format as clojure.xml/parse."
   [input]
   (xml/parse input startparse-tagsoup))
+
+(defn lazy-parse-xml
+  "Parses the XML using TagSoup and as result, returns a lazy sequence of elements in the same format as clojure.contrib.lazy-xml/parse-seq"
+  [input]
+  (lazy-xml/parse-seq input startparse-tagsoup))
