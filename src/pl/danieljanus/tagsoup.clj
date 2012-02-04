@@ -47,7 +47,7 @@
 
 (defmethod input-stream URL [#^URL x]
   (if (= "file" (.getProtocol x))
-    (FileInputStream. (.getPath x))
+    (input-stream (File. (.getPath x)))
     (let [connection (.openConnection x)]
       {:stream (.getInputStream connection), :encoding (-> connection (.getHeaderField "Content-Type") encoding-from-content-type)})))
 
