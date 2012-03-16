@@ -42,6 +42,9 @@ compatible with `clojure.xml` and is not the one described above.
 Example
 -------
 
+    (use 'pl.danieljanus.tagsoup)
+    => nil
+
     (parse "http://example.com")
     => [:html {}
               [:head {}
