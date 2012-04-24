@@ -1,7 +1,7 @@
 (ns pl.danieljanus.tagsoup
   (:require [clojure.zip :as zip]
             [clojure.xml :as xml]
-            [clojure.contrib.lazy-xml :as lazy-xml])
+            [clojure.data.xml :as lazy-xml])
   (:import (org.ccil.cowan.tagsoup Parser)
            (java.net URI URL MalformedURLException Socket)
            (java.io InputStream File FileInputStream ByteArrayInputStream BufferedInputStream InputStreamReader BufferedReader)
