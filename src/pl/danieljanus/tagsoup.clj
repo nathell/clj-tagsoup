@@ -37,7 +37,7 @@
   (when content-type
     (second (re-find #"charset=(.*)$" (.toLowerCase content-type)))))
 
-(defmulti #^{:doc "Like clojure.contrib.duck-streams/reader, but
+(defmulti #^{:doc "Like clojure.java.io/reader, but
   attempts to convert its argument to an InputStream. Returns a map
   mapping :stream to the stream and, potentially, :encoding to the
   encoding detected on that stream."}
@@ -99,15 +99,15 @@
 
 (defn- startparse-tagsoup
   "A startparse function compatible with clojure.xml."
-  [source content-handler]
-  (let [[parser source] (make-parser-and-source source)]
+  [input content-handler]
+  (let [[parser source] (make-parser-and-source input)]
     (.setContentHandler parser content-handler)
     (.parse parser source)
     parser))
 
 (defn parse
   "Parses a file or HTTP URL.  file may be anything that can be fed
-to clojure.contrib.duck-streams/reader.  If strip-whitespace is true
+to clojure.java.io/reader.  If strip-whitespace is true
 removes empty (whitespace-only) PCDATA from in between the tags, which
 makes the resulting tree cleaner. If prefer-header-http-info is true
 and the encoding is specified in both <meta http-equiv> tag and the
