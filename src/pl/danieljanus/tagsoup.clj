@@ -112,16 +112,17 @@ removes empty (whitespace-only) PCDATA from in between the tags, which
 makes the resulting tree cleaner. If prefer-header-http-info is true
 and the encoding is specified in both <meta http-equiv> tag and the
 HTTP headers (in this case, input must be a URL or a string
-representing one), the latter is preferred."
-  [input & {:keys [xml strip-whitespace prefer-header-http-info], :or {strip-whitespace true}}]
+representing one), the latter is preferred. If encoding cannot be
+inferred from the input, use 'encoding' as the default."
+  [input & {:keys [xml strip-whitespace prefer-header-http-info encoding], :or {strip-whitespace true}}]
   (with-local-vars [tree (zip/vector-zip []) pcdata "" reparse false]
-    (let [{:keys [stream encoding]} (input-stream input)
+    (let [{:keys [stream input-stream-encoding]} (input-stream input)
           stream (BufferedInputStream. stream)
           source (InputSource. stream)
           reparse-exception (Exception. "reparse")
           xml-encoding (when xml (read-xml-encoding-declaration stream))
           _ (.mark stream 65536)
-          _ (.setEncoding source (or (and xml xml-encoding) encoding))
+          _ (.setEncoding source (or (and xml xml-encoding) input-stream-encoding encoding))
           flush-pcdata #(let [data (var-get pcdata)]
                           (when-not (empty? data)
                             (when-not (and strip-whitespace (re-find #"^\s+$" data))
@@ -168,7 +169,7 @@ representing one), the latter is preferred."
 (defn parse-string
   "Parses a given string as HTML, passing options to `parse'."
   [s & options]
-  (apply parse (-> s .getBytes ByteArrayInputStream.) options))
+  (apply parse (-> s (.getBytes "UTF-8") ByteArrayInputStream.) :encoding "UTF-8" options))
 
 (defn parse-xml
   "Parses a given XML using TagSoup and returns the parse result
