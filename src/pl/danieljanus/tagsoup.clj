@@ -6,13 +6,13 @@
            (java.net URI URL MalformedURLException Socket)
            (java.io InputStream File FileInputStream ByteArrayInputStream BufferedInputStream InputStreamReader BufferedReader)
            (javax.xml.stream XMLEventReader XMLStreamConstants)
-           (javax.xml.stream.events XMLEvent)
+           (javax.xml.stream.events Attribute StartElement XMLEvent)
            (javanet.staxutils ContentHandlerToXMLEventWriter XMLEventPipe)
-           (org.xml.sax InputSource)))
+           (org.xml.sax Attributes InputSource)))
 
 (defn- attributes-map
   "Converts an Attributes object into a Clojure map,"
-  [attrs]
+  [^Attributes attrs]
   (into {}
         (map #(vector (keyword (.getQName attrs %)) (.getValue attrs %)) (range (.getLength attrs)))))
 
@@ -33,7 +33,7 @@
 
 (defn- encoding-from-content-type
   "Strips the character-set name from a Content-Type: HTTP header value."
-  [content-type]
+  [^String content-type]
   (when content-type
     (second (re-find #"charset=(.*)$" (.toLowerCase content-type)))))
 
@@ -72,7 +72,7 @@
 
 (defn read-xml-encoding-declaration
   "Reads XML encoding declaration from a BufferedInputStream."
-  [stream]
+  [^BufferedInputStream stream]
   (let [arr-size 1024
         arr (make-array Byte/TYPE arr-size)]
     (.mark stream arr-size)
@@ -100,7 +100,7 @@
 (defn- startparse-tagsoup
   "A startparse function compatible with clojure.xml."
   [input content-handler]
-  (let [[parser source] (make-parser-and-source input)]
+  (let [[^Parser parser ^InputSource source] (make-parser-and-source input)]
     (.setContentHandler parser content-handler)
     (.parse parser source)
     parser))
@@ -135,7 +135,7 @@ representing one), the latter is preferred."
                      (let [attrs (attributes-map attrs)
                            tag (keyword localname)]
                        (when (and (= tag :meta)
-                                  (let [http-equiv (attrs :http-equiv)]
+                                  (let [^String http-equiv (attrs :http-equiv)]
                                     (and http-equiv (= (.toLowerCase http-equiv) "content-type"))))
                          (let [charset (encoding-from-content-type (attrs :content))]
                            (when (and charset
@@ -167,7 +167,7 @@ representing one), the latter is preferred."
 
 (defn parse-string
   "Parses a given string as HTML, passing options to `parse'."
-  [s & options]
+  [^String s & options]
   (apply parse (-> s .getBytes ByteArrayInputStream.) options))
 
 (defn parse-xml
@@ -178,7 +178,7 @@ in the same format as clojure.xml/parse."
 
 (defn- xml-name
   "Returns the local part of the name of a given XML entity as a keyword."
-  [x]
+  [^StartElement x]
   (keyword (.getLocalPart (.getName x))))
 
 (defn eventize
@@ -188,7 +188,7 @@ in the same format as clojure.xml/parse."
     XMLStreamConstants/START_ELEMENT
     (lazy-xml/event :start-element
                     (xml-name ev)
-                    (into {} (map (fn [attr] [(xml-name attr) (.getValue attr)]) (iterator-seq (.getAttributes ev))))
+                    (into {} (map (fn [^Attribute attr] [(xml-name attr) (.getValue attr)]) (iterator-seq (.getAttributes ev))))
                     nil)
     XMLStreamConstants/END_ELEMENT
     (lazy-xml/event :end-element
@@ -214,7 +214,7 @@ XMLEventPipe."
   (let [pipe (XMLEventPipe.)
         ereader (.getReadEnd pipe)
         ewriter (.getWriteEnd pipe)
-        [parser source] (make-parser-and-source input)]
+        [^Parser parser ^InputSource source] (make-parser-and-source input)]
     (.setContentHandler parser (ContentHandlerToXMLEventWriter. ewriter))
     (future
      (.parse parser source)
