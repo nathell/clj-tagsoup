@@ -1,3 +1,5 @@
+[![Clojars Project](http://clojars.org/clj-tagsoup/clj-tagsoup/latest-version.svg)](http://clojars.org/clj-tagsoup/clj-tagsoup)
+
 clj-tagsoup
 ===========
 
@@ -44,6 +46,14 @@ There are two other options for parsing XML:
 
 Example
 -------
+
+*project.clj*
+```
+(defproject clj-tagsoup-example "0.0.1"
+  :dependencies [[clj-tagsoup/clj-tagsoup "0.3.0"]])
+```
+
+    lein repl
 
     (use 'pl.danieljanus.tagsoup)
     => nil
