@@ -202,7 +202,20 @@ in the same format as clojure.xml/parse."
 (defn event-seq
   "Like clojure.data.xml/pull-seq, but works on XMLEventReaders instead of stream readers."
   [^XMLEventReader ereader]
-  (remove nil? (map eventize (iterator-seq ereader))))
+  (keep eventize (iterator-seq ereader)))
+
+(defn cancellable-lazy-parse-xml
+  [input]
+  (let [pipe (XMLEventPipe.)
+        ereader (.getReadEnd pipe)
+        ewriter (.getWriteEnd pipe)
+        [^Parser parser ^InputSource source] (make-parser-and-source input)]
+    (.setContentHandler parser (ContentHandlerToXMLEventWriter. ewriter))
+    {:future (future
+               (try
+                 (.parse parser source)
+                 (finally (.close ewriter))))
+     :data (event-seq ereader)}))
 
 (defn lazy-parse-xml
   "Parses the XML using TagSoup and as result, returns a lazy
@@ -211,12 +224,4 @@ clojure.data.xml/source-seq.  Parsing happens on a background thread,
 from which XML events are reported to the calling thread via a
 XMLEventPipe."
   [input]
-  (let [pipe (XMLEventPipe.)
-        ereader (.getReadEnd pipe)
-        ewriter (.getWriteEnd pipe)
-        [^Parser parser ^InputSource source] (make-parser-and-source input)]
-    (.setContentHandler parser (ContentHandlerToXMLEventWriter. ewriter))
-    (future
-     (.parse parser source)
-     (.close ewriter))
-    (event-seq ereader)))
+  (:data (cancellable-lazy-parse-xml input)))
