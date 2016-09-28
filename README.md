@@ -47,13 +47,13 @@ There are two other options for parsing XML:
 Example
 -------
 
-*project.clj*
+*project.clj*:
 ```
 (defproject clj-tagsoup-example "0.0.1"
   :dependencies [[clj-tagsoup/clj-tagsoup "0.3.0"]])
 ```
 
-    lein repl
+`lein repl`:
 
     (use 'pl.danieljanus.tagsoup)
     => nil
